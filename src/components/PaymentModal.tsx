@@ -37,9 +37,20 @@ interface PaymentModalProps {
   onClose: () => void;
   userId: string;
   onSuccess: () => void;
+  /**
+   * Optional count of vehicles for commercial / fleet accounts.
+   * Used only for display; pricing is still controlled server-side.
+   */
+  vehicleCount?: number;
 }
 
-export function PaymentModal({ isOpen, onClose, userId, onSuccess }: PaymentModalProps) {
+export function PaymentModal({
+  isOpen,
+  onClose,
+  userId,
+  onSuccess,
+  vehicleCount,
+}: PaymentModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFree, setIsFree] = useState<boolean | null>(null);
@@ -220,6 +231,14 @@ export function PaymentModal({ isOpen, onClose, userId, onSuccess }: PaymentModa
               first 100 free, then ₹99 / ₹199 / ₹299.
             </span>
           </p>
+          {typeof vehicleCount === 'number' && (
+            <p className="text-xs text-zinc-400 mt-1">
+              Fleet vehicles:&nbsp;
+              <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                {vehicleCount}
+              </span>
+            </p>
+          )}
         </div>
 
         {loading && step === 'quote' ? (
@@ -263,7 +282,17 @@ export function PaymentModal({ isOpen, onClose, userId, onSuccess }: PaymentModa
         ) : step === 'pay' && !success ? (
           <div className="text-center py-8">
             <p className="text-zinc-500 text-sm mb-2">
-              Complete payment in the Razorpay window. Amount: ₹{((pricePaise ?? 0) / 100).toFixed(0)}
+              Complete payment in the Razorpay window. Amount:{' '}
+              <span className="font-semibold">
+                ₹{((pricePaise ?? 0) / 100).toFixed(0)}
+              </span>
+              {typeof vehicleCount === 'number' && (
+                <>
+                  {' '}
+                  for <span className="font-semibold">{vehicleCount}</span> vehicle
+                  {vehicleCount === 1 ? '' : 's'}
+                </>
+              )}
             </p>
             <p className="text-xs text-zinc-400">If the window did not open, check pop-up blocking.</p>
             {loading && (

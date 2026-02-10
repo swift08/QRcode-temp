@@ -32,10 +32,11 @@ export default async function EmergencyPage({ params }: EmergencyPageProps) {
     { data: medicalInfo },
     { data: emergencyNote },
     { data: contacts },
+    { data: fleetVehicle },
   ] = await Promise.all([
     supabaseAdmin
       .from('profiles')
-      .select('full_name, is_paid')
+      .select('full_name, is_paid, mobile')
       .eq('id', qrCode.profile_id)
       .single(),
     supabaseAdmin
@@ -60,6 +61,12 @@ export default async function EmergencyPage({ params }: EmergencyPageProps) {
       .select('id, name, relation, phone')
       .eq('profile_id', qrCode.profile_id)
       .order('created_at', { ascending: true }),
+    // If this QR belongs to a fleet vehicle, we attach vehicle details
+    supabaseAdmin
+      .from('fleet_vehicles')
+      .select('id, vehicle_number, label, make_model')
+      .eq('qr_token', token)
+      .maybeSingle(),
   ]);
 
   if (!profile || !profile.is_paid) {
@@ -93,6 +100,33 @@ export default async function EmergencyPage({ params }: EmergencyPageProps) {
   const age = emergencyProfile?.age ?? null;
   const languageNote = emergencyProfile?.language_note || null;
   const isOrganDonor = emergencyProfile?.organ_donor ?? false;
+  const isFleetVehicle = !!fleetVehicle;
+
+  // If this QR is tied to a fleet vehicle, try to resolve the currently assigned driver
+  let fleetDriver: { name: string; phone: string | null; blood_group: string | null } | null =
+    null;
+  if (fleetVehicle?.id) {
+    const { data: driverData, error: driverError } = await supabaseAdmin
+      .from('fleet_drivers')
+      .select('name, phone, blood_group')
+      .eq('assigned_vehicle_id', fleetVehicle.id)
+      .maybeSingle();
+
+    if (driverError) {
+      console.error('EmergencyPage: failed to fetch fleet driver for vehicle:', driverError);
+    }
+    if (driverData) {
+      fleetDriver = {
+        name: (driverData as any).name,
+        phone: (driverData as any).phone ?? null,
+        blood_group: (driverData as any).blood_group ?? null,
+      };
+    }
+  }
+
+  const driverName = fleetDriver?.name ?? null;
+  const driverPhone = fleetDriver?.phone ?? null;
+  const driverBloodGroup = fleetDriver?.blood_group ?? null;
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -119,15 +153,86 @@ export default async function EmergencyPage({ params }: EmergencyPageProps) {
               <span>Emergency information for:</span>
             </p>
             <h2 className="text-2xl font-extrabold tracking-tight">
-              {profile.full_name}
-              {age ? <span className="text-base text-zinc-400 ml-2">({age} yrs)</span> : null}
+              {isFleetVehicle && driverName
+                ? driverName
+                : isFleetVehicle
+                ? 'This vehicle & driver'
+                : profile.full_name}
+              {!isFleetVehicle && age ? (
+                <span className="text-base text-zinc-400 ml-2">({age} yrs)</span>
+              ) : null}
             </h2>
             {languageNote && (
               <p className="text-xs text-zinc-400">
-                Preferred language: <span className="font-medium text-zinc-200">{languageNote}</span>
+                Preferred language:{' '}
+                <span className="font-medium text-zinc-200">{languageNote}</span>
               </p>
             )}
           </div>
+
+          {isFleetVehicle && (
+            <>
+              <div className="mt-2 rounded-3xl border border-zinc-800 bg-zinc-950/70 px-4 py-3 space-y-1">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                  Vehicle details
+                </p>
+                <p className="text-sm text-zinc-100">
+                  <span className="font-semibold">Company:</span> {profile.full_name}
+                </p>
+                {profile.mobile && (
+                  <p className="text-sm text-zinc-100">
+                    <span className="font-semibold">Company mobile:</span>{' '}
+                    <span className="font-mono">{profile.mobile}</span>
+                  </p>
+                )}
+                <p className="text-sm text-zinc-100">
+                  <span className="font-semibold">Vehicle number:</span>{' '}
+                  {fleetVehicle?.vehicle_number ?? '—'}
+                </p>
+                {(fleetVehicle?.make_model || fleetVehicle?.label) && (
+                  <p className="text-sm text-zinc-100">
+                    <span className="font-semibold">Vehicle name:</span>{' '}
+                    {fleetVehicle?.make_model || fleetVehicle?.label}
+                  </p>
+                )}
+              </div>
+
+              {profile.mobile && (
+                <div className="mt-3">
+                  <a
+                    href={`tel:${profile.mobile}`}
+                    className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-2xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 active:scale-[0.98] transition"
+                  >
+                    Call owner
+                  </a>
+                </div>
+              )}
+
+              {(driverName || driverPhone || driverBloodGroup) && (
+                <div className="mt-3 rounded-3xl border border-zinc-800 bg-zinc-950/70 px-4 py-3 space-y-1">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                    Driver details
+                  </p>
+                  {driverName && (
+                    <p className="text-sm text-zinc-100">
+                      <span className="font-semibold">Driver:</span> {driverName}
+                    </p>
+                  )}
+                  {driverPhone && (
+                    <p className="text-sm text-zinc-100">
+                      <span className="font-semibold">Driver mobile:</span>{' '}
+                      <span className="font-mono">{driverPhone}</span>
+                    </p>
+                  )}
+                  {driverBloodGroup && (
+                    <p className="text-sm text-zinc-100">
+                      <span className="font-semibold">Driver blood group:</span> {driverBloodGroup}
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           {criticalNote && (
             <div className="rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-950/80 via-black to-red-900/40 px-4 py-3 shadow-[0_0_40px_rgba(248,113,113,0.35)]">

@@ -14,8 +14,13 @@ type PageProps = {
 };
 
 export default function RegisterPage(props: PageProps) {
+  const searchParams = props.searchParams ? React.use(props.searchParams) : {};
+  const segment =
+    (searchParams?.segment as string | undefined)?.toLowerCase() === 'commercial'
+      ? 'commercial'
+      : 'personal';
+
   if (props.params) React.use(props.params);
-  if (props.searchParams) React.use(props.searchParams);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -46,6 +51,7 @@ export default function RegisterPage(props: PageProps) {
         data: {
           full_name: fullName,
           mobile: normalizedMobile,
+          account_type: segment,
         },
       },
     });
@@ -55,12 +61,21 @@ export default function RegisterPage(props: PageProps) {
       setLoading(false);
     } else {
       // OTP verification temporarily disabled after registration
+      // After signup, route to dashboard; we can use account_type client-side
+      // to show personal vs commercial experience.
       router.push('/dashboard');
     }
   };
 
   return (
-    <AuthLayout title="Create Account" subtitle="Join QRgency to protect yourself and your family">
+    <AuthLayout
+      title="Create Account"
+      subtitle={
+        segment === 'commercial'
+          ? 'Set up Kavach for your vehicles and drivers.'
+          : 'Join QRgency to protect yourself and your family.'
+      }
+    >
       <form onSubmit={handleRegister} className="space-y-4">
         {error && (
           <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium border border-red-100 dark:border-red-800">

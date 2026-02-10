@@ -15,22 +15,21 @@ export default function Navbar() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ...navEase }}
-      className="fixed top-0 left-0 right-0 z-50 glass-card rounded-none border-0 border-b border-zinc-200/90 dark:border-zinc-800/90 shadow-3d"
-      style={{ transform: 'translateZ(0)' }}
+      className="sticky top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-lg border-b border-white/10"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-[4.25rem] items-center">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2 group">
               <motion.div
-                className="bg-red-600 p-1.5 rounded-xl shadow-lg shadow-red-600/30"
-                whileHover={{ scale: 1.06, y: -1 }}
+                className="bg-[#0A2A1F] p-1.5 rounded-xl"
+                whileHover={{ scale: 1.03, y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2, ...navEase }}
               >
                 <Shield className="w-6 h-6 text-white" />
               </motion.div>
-              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
+              <span className="text-xl font-semibold tracking-tight text-white group-hover:text-[#E6ECEF] transition-colors duration-200">
                 kavach
               </span>
             </Link>
@@ -46,22 +45,22 @@ export default function Navbar() {
               <motion.div key={item.href} whileHover={{ y: -1 }} transition={{ duration: 0.2 }}>
                 <Link
                   href={item.href}
-                  className="text-sm font-medium text-zinc-600 hover:text-red-600 transition-colors dark:text-zinc-400 dark:hover:text-red-500"
+                  className="text-sm font-medium text-[#B7BEC4] hover:text-[#145A3A] transition-colors"
                 >
                   {item.label}
                 </Link>
               </motion.div>
             ))}
             <motion.div
-              whileHover={{ scale: 1.02, y: -1 }}
+              whileHover={{ scale: 1.01, y: -1 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2, ...navEase }}
             >
               <Link
-                href="/register"
-                className="inline-block bg-red-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-700 transition-all shadow-3d-red hover:shadow-[0_8px_24px_-4px_rgba(220,38,38,0.4)] btn-3d"
+                href="/#pricing"
+                className="inline-block rounded-md bg-[#0A2A1F] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#145A3A] active:bg-[#1E6F4E] transition-colors"
               >
-                Get Started
+                Get Your Kavach
               </Link>
             </motion.div>
           </div>
@@ -69,7 +68,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-zinc-600 dark:text-zinc-400 p-2 -m-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="text-[#E6ECEF] p-2 -m-2 rounded-lg hover:bg-[#2B3136]"
               whileTap={{ scale: 0.92 }}
               transition={{ duration: 0.15 }}
             >
@@ -86,7 +85,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ...navEase }}
-            className="md:hidden overflow-hidden bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800"
+            className="md:hidden overflow-hidden bg-[#1F2428] border-b border-[#2B3136]"
           >
             <div className="py-4 px-4 space-y-1">
               {[
@@ -104,7 +103,7 @@ export default function Navbar() {
                   <Link
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className="block py-3 px-3 rounded-xl text-base font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    className="block py-3 px-3 rounded-xl text-base font-medium text-[#B7BEC4] hover:bg-[#2B3136] hover:text-[#145A3A] transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -117,11 +116,11 @@ export default function Navbar() {
                 className="pt-2"
               >
                 <Link
-                  href="/register"
+                  href="/#pricing"
                   onClick={() => setIsOpen(false)}
-                  className="block w-full text-center bg-red-600 text-white py-3.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-600/25"
+                  className="block w-full text-center bg-[#0A2A1F] text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-[#145A3A] active:bg-[#1E6F4E] transition-colors"
                 >
-                  Get Started
+                  Get Your Kavach
                 </Link>
               </motion.div>
             </div>

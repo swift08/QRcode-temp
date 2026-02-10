@@ -46,14 +46,17 @@ export async function POST(request: Request) {
       is_free: boolean;
     };
 
-    // Fetch the QR token to return it to the client
-    const { data: qrCode, error: qrError } = await supabaseAdmin
+    // Fetch the QR token to return it to the client.
+    // We intentionally avoid `.single()` here because there may be
+    // historical duplicate rows for a profile. Instead, we select
+    // and take the first result.
+    const { data: qrCodes, error: qrError } = await supabaseAdmin
       .from('qr_codes')
       .select('token')
       .eq('profile_id', userId)
-      .single();
+      .limit(1);
 
-    if (qrError || !qrCode) {
+    if (qrError || !qrCodes || qrCodes.length === 0) {
       console.error('Failed to fetch QR code after activation:', qrError);
       const message =
         (qrError as any)?.message ||
@@ -61,6 +64,8 @@ export async function POST(request: Request) {
         'Activation completed but QR code is missing';
       return NextResponse.json({ error: message }, { status: 500 });
     }
+
+    const qrCode = qrCodes[0];
 
     // Ensure QR image is stored in Supabase Storage `QR` bucket as {token}.png
     try {

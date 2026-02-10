@@ -28,7 +28,7 @@ export interface VerifiedSupabaseToken extends JWTPayload {
 /**
  * Verify a Supabase JWT access token and return its payload.
  *
- * Throws if the token is invalid, expired, or not issued by Supabase.
+ * Throws if the token is invalid, expired, or not issued by this Supabase project.
  * Issuer is validated as https://<project-ref>.supabase.co/auth/v1 per Supabase JWT spec.
  */
 export async function verifySupabaseToken(token: string): Promise<VerifiedSupabaseToken> {
